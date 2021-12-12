@@ -1,21 +1,19 @@
-FROM node:carbon
+FROM ubuntu:18.04
 
+# Install dependencies
+RUN apt-get update && \
+ apt-get -y install apache2
 
+# Install apache and write hello world message
+RUN echo 'Hello World!' > /var/www/html/index.html
 
-# Create app directory
-WORKDIR /usr/src/app
+# Configure apache
+RUN echo '. /etc/apache2/envvars' > /root/run_apache.sh && \
+ echo 'mkdir -p /var/run/apache2' >> /root/run_apache.sh && \
+ echo 'mkdir -p /var/lock/apache2' >> /root/run_apache.sh && \ 
+ echo '/usr/sbin/apache2 -D FOREGROUND' >> /root/run_apache.sh && \ 
+ chmod 755 /root/run_apache.sh
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-COPY package*.json ./
+EXPOSE 80
 
-RUN npm install
-# If you are building your code for production
-# RUN npm install --only=production
-
-# Bundle app source
-COPY . .
-
-EXPOSE 8080
-CMD [ "npm", "start" ]
+CMD /root/run_apache.sh
